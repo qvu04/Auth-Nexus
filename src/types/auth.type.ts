@@ -1,6 +1,6 @@
 export interface IRegister {
-    firstName: string;
-    lastName: string;
-    emailAddress: string;
+    firstName?: string; //optional
+    lastName?: string;
+    email: string;
     password: string;
 }

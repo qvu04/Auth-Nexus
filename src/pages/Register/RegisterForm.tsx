@@ -1,13 +1,26 @@
-import { useForm } from "react-hook-form"
+import { useForm, type SubmitHandler } from "react-hook-form"
 import type { IRegister } from "../../types/auth.type"
 import { REGEX_EMAIL } from "../../consonant/regex"
 import ErrorMsg from "../../components/Common/ErrorMsg"
 import { CgDanger } from "react-icons/cg";
+import { registerUser } from "../../api/authApi";
+import toast from "react-hot-toast";
+import { CgSpinner } from "react-icons/cg";
 const RegisterForm = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm<IRegister>({ mode: "onBlur" })
-    const onSubmit = () => {
-        console.log("Đăng ký thành công");
-    }
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<IRegister>({ mode: "onBlur" })
+    const onSubmit: SubmitHandler<IRegister> = async (data) => {
+        try {
+            const res = await registerUser({
+                email: data.email,
+                password: data.password
+            });
+            console.log("Đăng kí thành công: ", res)
+            toast.success("Đăng ký thành công");
+        } catch (error) {
+            console.log(error);
+            toast.error("Đăng ký thất bại");
+        }
+    };
     return (
         <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col items-center justify-center rounded-xl border w-80 md:w-100 h-full bg-white'>
             <div className="mb-2 md:p-3 relative">
@@ -38,17 +51,17 @@ const RegisterForm = () => {
             </div>
             <div className="mb-2 md:p-3 relative">
                 <input type="text"
-                    {...register("emailAddress", {
+                    {...register("email", {
                         required: "Email Address cannot be empty", pattern: {
                             value: REGEX_EMAIL,
                             message: "Looks like this is not an email"
                         }
                     })}
-                    placeholder={errors.emailAddress ? "email@example/com" : "Email Address"}
-                    className={errors.emailAddress ? 'border text-red-400 border-red-400 py-3 pl-6 rounded w-72 md:w-84' : 'border rounded w-72 md:w-84 py-3 pl-4 border-gray-400 text-black font-bold'}
+                    placeholder={errors.email ? "email@example/com" : "Email Address"}
+                    className={errors.email ? 'border text-red-400 border-red-400 py-3 pl-6 rounded w-72 md:w-84' : 'border rounded w-72 md:w-84 py-3 pl-4 border-gray-400 text-black font-bold'}
                 />
-                <ErrorMsg error={errors.emailAddress} />
-                {errors.emailAddress && (
+                <ErrorMsg error={errors.email} />
+                {errors.email && (
                     <div className="absolute top-4 right-4 md:top-7 md:right-8">
                         <CgDanger className="text-red-400 text-xl" />
                     </div>
@@ -68,11 +81,11 @@ const RegisterForm = () => {
                 )}
             </div>
             <div className='flex flex-col items-center justify-center text-center'>
-                <button type='submit' className='bg-green-400 cursor-pointer hover:bg-green-300 md:px-18 text-white mt-3 mb-3 py-3 px-12 rounded-sm'>CLAIM YOUR FREE TRIAL</button>
+                <button disabled={isSubmitting} type='submit' className='bg-green-400 cursor-pointer min-w-72 md:min-w-84 flex items-center justify-center hover:bg-green-300 md:px-18 text-white mt-3 mb-3 py-3 px-12 rounded-sm'>{isSubmitting ? <CgSpinner className="animate-spin  text-xl" /> : "CLAIM YOUR FREE TRIAL"}</button>
                 <p className='text-gray-400 text-[10px] mb-3 whitespace-pre-line md:whitespace-nowrap'>By clicking the button, you are agreeing to {"\n"} our <span className='text-red-400'>Terms and Services</span></p>
             </div>
 
         </form>
     )
 }
-export default RegisterForm
+export default RegisterForm 
